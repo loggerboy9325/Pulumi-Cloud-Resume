@@ -1,0 +1,7 @@
+name: cloudresume
+runtime: go
+description: Pulumi for cloudresume
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: aws-go
