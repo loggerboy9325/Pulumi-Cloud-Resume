@@ -23,7 +23,7 @@ func CreateS3Bucket(ctx *pulumi.Context) error {
 		if err != nil {
 			return err
 		}
-		ctx.Export("bucket", bucket.ID())
+		ctx.Export("bucke", bucket.ID())
 	}
 	return nil
 }
