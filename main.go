@@ -1,8 +1,10 @@
 package main
 
 import (
+	"cloudresume/dynamodb"
 	"cloudresume/lambda"
 	"cloudresume/s3"
+
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -13,6 +15,10 @@ func main() {
 			return err
 		}
 		err = lambda.CreateLambda(ctx)
+		if err != nil {
+			return err
+		}
+		err = dynamodb.CreateDynamoDB(ctx)
 		if err != nil {
 			return err
 		}
