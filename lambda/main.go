@@ -62,6 +62,16 @@ func CreateLambda(ctx *pulumi.Context) error {
 		return err
 	}
 
+	_, err = lambda.NewPermission(ctx, "apiGatewayPermission", &lambda.PermissionArgs{
+		Action:    pulumi.String("lambda:InvokeFunction"),
+		Function:  function.Name,
+		Principal: pulumi.String("apigateway.amazonaws.com"),
+		SourceArn: pulumi.Sprintf("%v/*/*/*", api.ExecutionArn),
+	})
+	if err != nil {
+		return err
+	}
+
 	resource, err := apigateway.NewResource(ctx, "Resource", &apigateway.ResourceArgs{
 		RestApi:  api.ID(),
 		PathPart: pulumi.String("my-resource"),

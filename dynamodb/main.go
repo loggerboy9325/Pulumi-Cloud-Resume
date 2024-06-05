@@ -6,14 +6,13 @@ import (
 )
 
 func CreateDynamoDB(ctx *pulumi.Context) error {
-	table, err := dynamodb.NewTable(ctx, "test", &dynamodb.TableArgs{
-		Name:          pulumi.String("test-table"),
-		ReadCapacity:  pulumi.Int(10),
-		WriteCapacity: pulumi.Int(10),
-		HashKey:       pulumi.String("exampleHashKey"),
+	table, err := dynamodb.NewTable(ctx, "Pulumi-Resume-Table", &dynamodb.TableArgs{
+		Name:        pulumi.String("visitors-1"),
+		BillingMode: pulumi.String("PAY_PER_REQUEST"),
+		HashKey:     pulumi.String("ID"),
 		Attributes: dynamodb.TableAttributeArray{
 			&dynamodb.TableAttributeArgs{
-				Name: pulumi.String("exampleHashKey"),
+				Name: pulumi.String("ID"),
 				Type: pulumi.String("S"),
 			},
 		},
@@ -21,7 +20,7 @@ func CreateDynamoDB(ctx *pulumi.Context) error {
 	if err != nil {
 		println(err)
 	}
-	ctx.Export("table", table)
+	ctx.Export("table", table.Arn)
 
 	return nil
 }
