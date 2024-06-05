@@ -38,8 +38,8 @@ func CreateLambda(ctx *pulumi.Context) error {
 		return err
 	}
 
-	function, err := lambda.NewFunction(ctx, "myLambdaFunction", &lambda.FunctionArgs{
-		Code:        pulumi.NewFileArchive("lambda/function.zip"),
+	function, err := lambda.NewFunction(ctx, "Pulumi-Resume", &lambda.FunctionArgs{
+		Code:        pulumi.NewFileArchive("lambda/lambda-handler/lambda-handler.zip"),
 		Runtime:     pulumi.String("provided.al2023"),
 		Role:        role.Arn,
 		Handler:     pulumi.String("main"),
