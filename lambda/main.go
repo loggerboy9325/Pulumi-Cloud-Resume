@@ -5,7 +5,10 @@ import (
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/iam"
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/lambda"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"os"
 )
+
+var tablearn = os.Getenv("TABLE_ARN")
 
 func CreateLambda(ctx *pulumi.Context) error {
 	role, err := iam.NewRole(ctx, "lambdaRole", &iam.RoleArgs{
@@ -72,6 +75,26 @@ func CreateLambda(ctx *pulumi.Context) error {
 		return err
 	}
 
+	_, err = iam.NewRolePolicy(ctx, "lambdaPolicy", &iam.RolePolicyArgs{
+		Role: role.ID(),
+		Policy: pulumi.String(`{
+				"Version": "2012-10-17",
+				"Statement": [{
+					"Effect": "Allow",
+					"Action": [
+						"dynamodb:GetItem",
+						"dynamodb:PutItem",
+						"dynamodb:UpdateItem",
+						"dynamodb:DeleteItem"
+					],
+					"Resource": "` + tablearn + `"
+				}]
+			}`),
+	})
+	if err != nil {
+		return err
+	}
+
 	resource, err := apigateway.NewResource(ctx, "Resource", &apigateway.ResourceArgs{
 		RestApi:  api.ID(),
 		PathPart: pulumi.String("my-resource"),
@@ -109,6 +132,6 @@ func CreateLambda(ctx *pulumi.Context) error {
 	}
 	ctx.Export("functionname", function.Name)
 	ctx.Export("apiURL", function.InvokeArn)
-	ctx.Export("url", pulumi.Sprintf("https://%s.execute-api.%s.amazonaws.com/prod/myresource", api.ID(), "us-east-1"))
+	ctx.Export("url", pulumi.Sprintf("https://%v.execute-api.%s.amazonaws.com/prod/myresource", api.ID(), "us-east-1"))
 	return nil
 }
