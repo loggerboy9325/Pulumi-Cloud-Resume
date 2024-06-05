@@ -5,10 +5,7 @@ import (
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/iam"
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/lambda"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
-	"os"
 )
-
-var tablearn = os.Getenv("TABLE_ARN")
 
 func CreateLambda(ctx *pulumi.Context) error {
 	role, err := iam.NewRole(ctx, "lambdaRole", &iam.RoleArgs{
@@ -87,7 +84,7 @@ func CreateLambda(ctx *pulumi.Context) error {
 						"dynamodb:UpdateItem",
 						"dynamodb:DeleteItem"
 					],
-					"Resource": "` + tablearn + `"
+					"Resource": "arn:aws:dynamodb:us-east-1:936791179343:table/visitors-1"
 				}]
 			}`),
 	})
@@ -132,6 +129,6 @@ func CreateLambda(ctx *pulumi.Context) error {
 	}
 	ctx.Export("functionname", function.Name)
 	ctx.Export("apiURL", function.InvokeArn)
-	ctx.Export("url", pulumi.Sprintf("https://%v.execute-api.%s.amazonaws.com/prod/myresource", api.ID(), "us-east-1"))
+	ctx.Export("url", pulumi.Sprintf("https://%s.execute-api.%s.amazonaws.com/prod/myresource", api.ID(), "us-east-1"))
 	return nil
 }
