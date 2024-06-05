@@ -11,8 +11,17 @@ func CreateS3Bucket(ctx *pulumi.Context) error {
 		return err
 	}
 
-	files := []string{"index.html", "script.js", "images/CCP.png", "images/portrait.jpg",
-		"images/SAA.png", "images/SAP.png", "ResumeFinal.pdf"}
+	files := []string{"index.html",
+		"script.js",
+		"images/CCP.png",
+		"images/portrait.jpg",
+		"images/SAA.png",
+		"images/SAP.png",
+		"ResumeFinal.pdf",
+		"images/docker.png",
+		"images/Kubernetes.png",
+		"images/go.png",
+	}
 
 	for _, file := range files {
 		_, err := s3.NewBucketObject(ctx, file, &s3.BucketObjectArgs{
