@@ -1,6 +1,9 @@
-push:
-  branches:
-    - main
+name: Pulumi
+
+on:
+  push:
+    branches:
+      - main
 jobs:
   update:
     name: Update
