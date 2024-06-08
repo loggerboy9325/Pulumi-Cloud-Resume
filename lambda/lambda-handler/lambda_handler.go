@@ -10,7 +10,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-var tableName = "Pulumi-Resume-Table"
+var tableName = "visitors-1"
 
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// Get the value from the request body

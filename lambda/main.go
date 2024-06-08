@@ -38,6 +38,26 @@ func CreateLambda(ctx *pulumi.Context) error {
 		return err
 	}
 
+	_, err = iam.NewRolePolicy(ctx, "lambda-Policy", &iam.RolePolicyArgs{
+		Role: role.Name,
+		Policy: pulumi.String(`{
+				"Version": "2012-10-17",
+				"Statement": [{
+					"Effect": "Allow",
+					"Action": [
+						"dynamodb:GetItem",
+						"dynamodb:PutItem",
+						"dynamodb:UpdateItem",
+						"dynamodb:DeleteItem"
+					],
+					"Resource": "arn:aws:dynamodb:us-east-1:936791179343:table/visitors-1"
+				}]
+			}`),
+	}, pulumi.DependsOn([]pulumi.Resource{role}))
+	if err != nil {
+		return err
+	}
+
 	function, err := lambda.NewFunction(ctx, "Pulumi-Resume", &lambda.FunctionArgs{
 		Code:        pulumi.NewFileArchive("lambda/lambda-handler/lambda-handler.zip"),
 		Runtime:     pulumi.String("provided.al2023"),
@@ -55,7 +75,7 @@ func CreateLambda(ctx *pulumi.Context) error {
 	if err != nil {
 		return err
 	}
-	api, err := apigateway.NewRestApi(ctx, "myApi", &apigateway.RestApiArgs{
+	api, err := apigateway.NewRestApi(ctx, "Pulumi-Reseume-Api", &apigateway.RestApiArgs{
 		Description: pulumi.String("My api gateway"),
 	})
 	if err != nil {
@@ -72,26 +92,6 @@ func CreateLambda(ctx *pulumi.Context) error {
 		return err
 	}
 
-	_, err = iam.NewRolePolicy(ctx, "lambdaPolicy", &iam.RolePolicyArgs{
-		Role: role.ID(),
-		Policy: pulumi.String(`{
-				"Version": "2012-10-17",
-				"Statement": [{
-					"Effect": "Allow",
-					"Action": [
-						"dynamodb:GetItem",
-						"dynamodb:PutItem",
-						"dynamodb:UpdateItem",
-						"dynamodb:DeleteItem"
-					],
-					"Resource": "arn:aws:dynamodb:us-east-1:936791179343:table/visitors-1"
-				}]
-			}`),
-	})
-	if err != nil {
-		return err
-	}
-
 	resource, err := apigateway.NewResource(ctx, "Resource", &apigateway.ResourceArgs{
 		RestApi:  api.ID(),
 		PathPart: pulumi.String("my-resource"),
@@ -100,7 +100,7 @@ func CreateLambda(ctx *pulumi.Context) error {
 	if err != nil {
 		return err
 	}
-	Method, err := apigateway.NewMethod(ctx, "mymethod", &apigateway.MethodArgs{
+	Method, err := apigateway.NewMethod(ctx, "Pulumi-Resume-method", &apigateway.MethodArgs{
 		RestApi:       api.ID(),
 		ResourceId:    resource.ID(),
 		HttpMethod:    pulumi.String("GET"),
@@ -109,7 +109,7 @@ func CreateLambda(ctx *pulumi.Context) error {
 	if err != nil {
 		return nil
 	}
-	integ, err := apigateway.NewIntegration(ctx, "myIntegration", &apigateway.IntegrationArgs{
+	integ, err := apigateway.NewIntegration(ctx, "Pulumi-Resume-Integration", &apigateway.IntegrationArgs{
 		RestApi:               api.ID(),
 		ResourceId:            resource.ID(),
 		HttpMethod:            pulumi.String("GET"),
@@ -120,7 +120,7 @@ func CreateLambda(ctx *pulumi.Context) error {
 	if err != nil {
 		return err
 	}
-	_, err = apigateway.NewDeployment(ctx, "Mydeployment", &apigateway.DeploymentArgs{
+	_, err = apigateway.NewDeployment(ctx, "Pulumi-deployment", &apigateway.DeploymentArgs{
 		RestApi:   api.ID(),
 		StageName: pulumi.String("prod"),
 	}, pulumi.DependsOn([]pulumi.Resource{integ, Method}))
