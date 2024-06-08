@@ -27,16 +27,6 @@ func CreateS3Bucket(ctx *pulumi.Context) error {
 		return err
 	}
 
-	//ownershipControls, err := s3.NewBucketOwnershipControls(ctx, "ownership-controls", &s3.BucketOwnershipControlsArgs{
-	//	Bucket: bucket.Bucket,
-	//	Rule: &s3.BucketOwnershipControlsRuleArgs{
-	//		ObjectOwnership: pulumi.String("ObjectWriter"),
-	//	},
-	//})
-	//if err != nil {
-	//	return err
-	//}
-
 	publicAccessBlock, err := s3.NewBucketPublicAccessBlock(ctx, "public-access-block", &s3.BucketPublicAccessBlockArgs{
 		Bucket:          bucket.Bucket,
 		BlockPublicAcls: pulumi.Bool(false),
@@ -98,7 +88,7 @@ func CreateS3Bucket(ctx *pulumi.Context) error {
 	}).(pulumi.StringOutput)
 
 	_, err = s3.NewBucketPolicy(ctx, "bucketPolicy", &s3.BucketPolicyArgs{
-		Bucket: bucket.ID(), // refer to the created bucket
+		Bucket: bucket.ID(),
 		Policy: policyJSON,
 	})
 	if err != nil {
@@ -139,7 +129,7 @@ func CreateS3Bucket(ctx *pulumi.Context) error {
 				},
 			},
 		},
-		PriceClass: pulumi.String("PriceClass_100"),
+		PriceClass: pulumi.String("PriceClass_200"),
 
 		Restrictions: &cloudfront.DistributionRestrictionsArgs{
 			GeoRestriction: &cloudfront.DistributionRestrictionsGeoRestrictionArgs{
@@ -154,86 +144,12 @@ func CreateS3Bucket(ctx *pulumi.Context) error {
 		return err
 	}
 
-	//oai, err := cloudfront.NewOriginAccessIdentity(ctx, "myOAI", &cloudfront.OriginAccessIdentityArgs{
-	//	Comment: pulumi.String("OAI for accessing S3 bucket"),
-	//})
-	//if err != nil {
-	//	return err
-	//}
-
-	//_, err = s3.NewBucketPolicy(ctx, "bucketPolicy", &s3.BucketPolicyArgs{
-	//	Bucket: bucket.Bucket,
-	//	Policy: pulumi.Any(pulumi.Sprintf(`{
-	//			"Version": "2012-10-17",
-	//			"Statement": [
-	//				{
-	//					"Effect": "Allow",
-	//					"Principal": {
-	//						"AWS": "%s"
-	//					},
-	//					"Action": "s3:GetObject",
-	//					"Resource": "arn:aws:s3:::%s/*"
-	//				}
-	//			]
-	//		}`, oai.S3CanonicalUserId, bucket.ID())),
-	//})
-	//if err != nil {
-	//	return err
-	//}
-
-	//cert, err := acm.NewCertificate(ctx, "myCert", &acm.CertificateArgs{
-	//	DomainName:       pulumi.String("example.com"),
-	//	ValidationMethod: pulumi.String("DNS"),
-	//})
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//// Create a CloudFront distribution
-	//_, err = cloudfront.NewDistribution(ctx, "myDistribution", &cloudfront.DistributionArgs{
-	//	Enabled: pulumi.Bool(true),
-	//	Origins: cloudfront.DistributionOriginArray{
-	//		&cloudfront.DistributionOriginArgs{
-	//			DomainName: bucket.BucketRegionalDomainName,
-	//			OriginId:   pulumi.String("myS3Origin"),
-	//			S3OriginConfig: &cloudfront.DistributionOriginS3OriginConfigArgs{
-	//				OriginAccessIdentity: oai.CloudfrontAccessIdentityPath,
-	//			},
-	//		},
-	//	},
-	//	DefaultCacheBehavior: &cloudfront.DistributionDefaultCacheBehaviorArgs{
-	//		AllowedMethods: pulumi.StringArray{
-	//			pulumi.String("GET"),
-	//			pulumi.String("HEAD"),
-	//		},
-	//		CachedMethods: pulumi.StringArray{
-	//			pulumi.String("GET"),
-	//			pulumi.String("HEAD"),
-	//		},
-	//		TargetOriginId:       pulumi.String("myS3Origin"),
-	//		ViewerProtocolPolicy: pulumi.String("redirect-to-https"),
-	//	},
-	//	ViewerCertificate: &cloudfront.DistributionViewerCertificateArgs{
-	//		AcmCertificateArn:      cert.Arn,
-	//		SslSupportMethod:       pulumi.String("sni-only"),
-	//		MinimumProtocolVersion: pulumi.String("TLSv1.2_2021"),
-	//	},
-	//	Restrictions: &cloudfront.DistributionRestrictionsArgs{
-	//		GeoRestriction: &cloudfront.DistributionRestrictionsGeoRestrictionArgs{
-	//			RestrictionType: pulumi.String("none"),
-	//		},
-	//	},
-	//})
-	//if err != nil {
-	//	return err
-	//}
-
 	// Export the name of the bucket and the CloudFront distribution domain name
 	ctx.Export("bucketName", bucket.Bucket)
 	ctx.Export("cloudFrontDomainName", bucket.BucketRegionalDomainName)
-	ctx.Export("originURL", pulumi.Sprintf("http://%s", bucket.WebsiteEndpoint))
+	ctx.Export("originURL", pulumi.Sprintf("http://%v", bucket.WebsiteEndpoint))
 	ctx.Export("originHostname", bucket.WebsiteEndpoint)
-	ctx.Export("cdnURL", pulumi.Sprintf("https://%s", cdn.DomainName))
+	ctx.Export("cdnURL", pulumi.Sprintf("https://%v", cdn.DomainName))
 	ctx.Export("cdnHostname", cdn.DomainName)
 
 	return nil
